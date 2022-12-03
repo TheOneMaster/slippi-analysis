@@ -1,6 +1,8 @@
 import { SlippiGame } from "@slippi/slippi-js";
 import { SlippiReadError } from "../error";
 
+import { GrabFrames } from "./base.interface";
+
 export function getGrabFrames(slp: SlippiGame) : GrabFrames{
 
     const frames = slp.getFrames();
