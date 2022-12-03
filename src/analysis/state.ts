@@ -32,3 +32,14 @@ export function isDead(frame: PostFrameUpdateType): boolean {
 
     return actionStateId >= 0x00 && actionStateId <= 0x0a;
 }
+
+export function isGrabbed(frame: PostFrameUpdateType): boolean {
+    
+    const actionStateId = frame.actionStateId;
+
+    if (actionStateId === null) {
+        throw new Error("Cannot find player state");
+    }
+
+    return actionStateId >= 0xdf && actionStateId <= 0xe8
+}
