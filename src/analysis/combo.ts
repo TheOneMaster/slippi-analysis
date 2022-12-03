@@ -4,8 +4,6 @@ import { getGrabFrames } from "./base";
 import { Combo, ReplayCombos } from "./combo.interface";
 import { isInGroundedControl, isDead } from "./state";
 
-const slp = new SlippiGame("slp/Game_20221130T003859.slp");
-
 export function getGrabCombos(slp: SlippiGame): ReplayCombos {
 
     const grab_init_frames = getGrabFrames(slp);
@@ -68,6 +66,3 @@ export function getGrabCombos(slp: SlippiGame): ReplayCombos {
     return combos
 }
 
-const grab_combos = getGrabCombos(slp);
-
-console.log(grab_combos);
