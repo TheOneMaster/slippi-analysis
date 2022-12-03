@@ -1,8 +1,8 @@
 export interface GrabFrames {
-    [frameIndex: string]: number
+    [frameIndex: string]: Grab
 }
 export interface Grab {
     frameStart: number,
     by: number,
-    towards: number,
+    grabbed: number
 }

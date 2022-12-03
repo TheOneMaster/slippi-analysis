@@ -1,7 +1,7 @@
 import { SlippiGame } from "@slippi/slippi-js";
 import { SlippiReadError } from "../error";
 
-import { GrabFrames } from "./base.interface";
+import { Grab, GrabFrames } from "./base.interface";
 
 export function getGrabFrames(slp: SlippiGame) : GrabFrames{
 
@@ -23,7 +23,21 @@ export function getGrabFrames(slp: SlippiGame) : GrabFrames{
 
             // If they were grabbing & are now in the grab pull (towards you) animation
             if (pre_frame?.actionStateId === 212 && post_frame?.actionStateId === 213) {
-                grab_frames[frame] = parseInt(playerID);
+
+                const grabbed = Object.keys(players).reduce((grabbed, player) => {
+                    if (player !== playerID) {
+                        return parseInt(player)
+                    }
+                    return grabbed
+                }, 0)
+
+                const grab: Grab = {
+                    frameStart: parseInt(frame),
+                    by: parseInt(playerID),
+                    grabbed: grabbed
+                };
+
+                grab_frames[frame] = grab;
             }
         }
     }

@@ -6,7 +6,7 @@ import { isInGroundedControl, isDead } from "./state";
 
 const slp = new SlippiGame("slp/Game_20221130T003859.slp");
 
-function getGrabCombos(slp: SlippiGame): ReplayCombos {
+export function getGrabCombos(slp: SlippiGame): ReplayCombos {
 
     const grab_init_frames = getGrabFrames(slp);
 
@@ -19,10 +19,7 @@ function getGrabCombos(slp: SlippiGame): ReplayCombos {
     for (const grab_frame in grab_init_frames) {
 
         const slp_frame = slp_frame_index.indexOf(grab_frame);
-
-        // Select person being comboed, not the person comboing
-        const grabbed_player = grab_init_frames[grab_frame] ? 0 : 1;
-
+        const grabbed_player = grab_init_frames[grab_frame].grabbed;
         const init_percent = slp_frames[slp_frame].players[grabbed_player]?.post.percent;
 
         // Store frame indexes that are part of the combo
@@ -46,7 +43,7 @@ function getGrabCombos(slp: SlippiGame): ReplayCombos {
 
                 const combo: Combo = {
                     frames: frames,
-                    player: grab_init_frames[grab_frame],
+                    player: grab_init_frames[grab_frame].by,
                     startFrame: slp_frame,
                     endFrame: frame_index-1,
                     startPercent: init_percent ?? 0,
