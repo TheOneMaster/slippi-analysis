@@ -23,3 +23,9 @@ export function getCharacters(slp: SlippiGame): number[]  {
 
     return chars
 }
+
+export function roundToDecimal(num: number, sig_figs: number) {
+    const p = Math.pow(10, sig_figs);
+    const n = (num * p) * (1 + Number.EPSILON);
+    return Math.round(n)/p;
+}
