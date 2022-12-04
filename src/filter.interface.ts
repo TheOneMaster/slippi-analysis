@@ -6,3 +6,9 @@ export interface Filter {
     stage?: Stage,
     numPlayers?: number
 }
+
+export interface FilterOptions {
+    chars?: boolean,
+    stage?: boolean,
+    numPlayers?: boolean
+}
