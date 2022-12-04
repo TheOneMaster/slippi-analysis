@@ -2,13 +2,11 @@ import { SlippiGame } from "@slippi/slippi-js";
 import { SlippiReadError } from "../error";
 
 import { Grab, GrabFrames } from "./base.interface";
-import { isGrabbed } from "./state";
+import { didGrabSucceed, isGrabbed } from "./state";
 
 export function getGrabFrames(slp: SlippiGame) : GrabFrames{
 
     const frames = slp.getFrames();
-    if (!frames) throw new SlippiReadError();
-
     const grab_frames = {} as GrabFrames;
 
     for (const frame in frames) {
@@ -16,14 +14,11 @@ export function getGrabFrames(slp: SlippiGame) : GrabFrames{
         const players = frame_data.players;
 
         for (const playerID in players) {
-            const pre_frame = players[playerID]?.pre;
-            const post_frame = players[playerID]?.post;
-
-            // Check if they are doing standing grab or dash grab
-            const check_grabbing = pre_frame?.actionStateId === 212 || pre_frame?.actionStateId === 214
+            const playerID_int = parseInt(playerID);
+            const grab_success = didGrabSucceed(frame_data, playerID_int);
 
             // If they were grabbing & are now in the grab pull (towards you) animation
-            if (pre_frame?.actionStateId === 212 && post_frame?.actionStateId === 213) {
+            if (grab_success) {
 
                 // Player who is not the grabber (only works for 1v1)
                 const grabbed = Object.keys(players).reduce((grabbed, player) => {
