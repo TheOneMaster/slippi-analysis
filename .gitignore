@@ -1,6 +1,7 @@
 # Editor + Development files
 /node_modules
 /.vscode
+/slp/2022-11
 
 # Generated files
 /build
