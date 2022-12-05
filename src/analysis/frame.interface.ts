@@ -13,3 +13,7 @@ export interface FramePlayerData {
 export interface SimilarFrames {
     [slp_filename: string]: number[]
 }
+
+export interface SyncedPlayers {
+    [playerIndex: number]: number
+}

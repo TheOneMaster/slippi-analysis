@@ -1,7 +1,7 @@
 import { FrameEntryType, SlippiGame } from "@slippi/slippi-js"
-
 import { roundToDecimal } from "../helper";
-import { FrameData, FramePlayerData } from "./pos.interface";
+import { findPlayerByChar } from "./char";
+import { FramePlayerData, SyncedPlayers } from "./frame.interface";
 
 export class Frame {
 
@@ -67,21 +67,20 @@ export class Frame {
     }
 
 
-    isSimilar(frame: Frame, pos_tolerance=5): boolean {
+    isSimilar(frame: Frame, synced_player_index: SyncedPlayers, pos_tolerance=5): boolean {
 
         // If there are a different number of players, it is false
         if (this.players.length !== frame.players.length) {
             return false
         }
 
+        // Loop over each frame to check whether they are similar to the current frame
         const filter_index: number[] = [];
         let final_bool = true;
 
         for (const player of this.players) {
 
-            const cur_char = player.char;
-
-            let similar_player_index = frame.getPlayerIndexByCharacter(cur_char, filter_index);
+            const similar_player_index = synced_player_index[player.playerIndex];
             const similar_player = frame.players[similar_player_index];
 
             filter_index.push(similar_player_index);
@@ -119,16 +118,64 @@ export function findSimilarFrames(comparing_game: SlippiGame, origGame_or_frame:
     }
 
     const comparing_game_frames = comparing_game.getFrames();
+    const synced_player_index = syncPlayerIndexByCharacter(comparing_game, original_frame);
     let similar_frames: string[] = [];
 
 
     for (const frame_index in comparing_game_frames) {
         const comparison_frame = new Frame(comparing_game_frames[frame_index]);
 
-        if (original_frame.isSimilar(comparison_frame)) {
+        if (original_frame.isSimilar(comparison_frame, synced_player_index)) {
             similar_frames.push(frame_index);
         }
     }
 
     return similar_frames
+}
+
+function syncPlayerIndexByCharacter(new_slp: SlippiGame, original_frame: Frame): SyncedPlayers {
+
+    const sync: SyncedPlayers = {};
+    const total_players = original_frame.players.length;
+    const temp: number[] = [];
+
+    for (const player of original_frame.players) {
+
+        const char = player.char;
+
+        try {
+
+            const new_player_index = findPlayerByChar(new_slp, char);
+            sync[player.playerIndex] = new_player_index;
+        
+        } catch (error) {
+
+            temp.push(player.playerIndex);
+
+        } 
+    }
+        
+    if (temp.length !== 0) {
+
+        const new_players_selected = Object.values(sync);
+
+        for (const index of temp) {
+
+            let new_player_index = -1;
+            for (let i=0; i < total_players; i++) {
+                if (new_players_selected.includes(i)) {
+                    continue
+                }
+                
+                new_player_index = i;
+                new_players_selected.push(i);
+                break;
+            }
+
+            sync[index] = new_player_index;
+        }
+    }
+
+    return sync;
+
 }
