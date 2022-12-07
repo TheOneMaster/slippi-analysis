@@ -1,5 +1,8 @@
 import { FrameEntryType, PostFrameUpdateType } from "@slippi/slippi-js";
 
+import { FrameStateError } from "../error";
+import { STAGE_GEOMETRY_MAP } from "./constants";
+
 /*
 
  * Most of this file is taken from slippilab.
@@ -14,7 +17,7 @@ export function isInGroundedControl(frame: PostFrameUpdateType): boolean {
     const actionStateId = frame.actionStateId;
 
     if (actionStateId === null) {
-        throw new Error("Cannot find frame or player in replay");
+        throw new FrameStateError();
     }
 
     const ground = actionStateId >= 0x0e && actionStateId <= 0x18;
@@ -30,7 +33,7 @@ export function isDead(frame: PostFrameUpdateType): boolean {
     const actionStateId = frame.actionStateId;
 
     if (actionStateId === null) {
-        throw new Error("Cannot find player state");
+        throw new FrameStateError();
     }
 
     return actionStateId >= 0x00 && actionStateId <= 0x0a;
@@ -41,11 +44,50 @@ export function isGrabbed(frame: PostFrameUpdateType): boolean {
     const actionStateId = frame.actionStateId;
 
     if (actionStateId === null) {
-        throw new Error("Cannot find player state");
+        throw new FrameStateError();
     }
 
     return actionStateId >= 0xdf && actionStateId <= 0xe8
 }
+
+export function isOnstage(frame: PostFrameUpdateType, stageId: number): boolean {
+
+    const stageGeometry = STAGE_GEOMETRY_MAP[stageId];
+
+    const char_pos_x = frame.positionX;
+    const char_pos_y = frame.positionY;
+
+    if (!char_pos_x || !char_pos_y) {
+        throw new Error("Unable to get player position in frame")
+    }
+
+    const within_x = (stageGeometry.leftLedgeX <= char_pos_x && char_pos_x <= stageGeometry.rightLedgeX);
+    let within_y: boolean;
+
+    if (stageGeometry.topPlatformHeight !== undefined) {
+        within_y = (stageGeometry.topPlatformHeight >= char_pos_y && char_pos_y >= stageGeometry.mainPlatformHeight);
+    } else {
+        within_y = stageGeometry.mainPlatformHeight === char_pos_y;
+    }
+
+    return within_x && within_y
+}
+
+
+
+export function isRecovering(frame: PostFrameUpdateType, stageId: number) {
+
+    const isAirborne = frame.isAirborne;
+
+    if (!isAirborne) {
+        return false
+    }
+
+    return isOnstage(frame, stageId) && isAirborne;
+}
+
+
+
 
 export function didGrabSucceed(frame: FrameEntryType, player: number): boolean {
 
