@@ -1,0 +1,103 @@
+import { StageGeometryMap } from "./const.interface";
+
+export const STAGE_GEOMETRY_MAP: StageGeometryMap = {
+    2: {
+        name: "Fountain of Dreams",
+        leftXBoundary: -198.75,
+        rightXBoundary: 198.75,
+        upperYBoundary: 202.5,
+        lowerYBoundary: -146.25,
+        mainPlatformHeight: 0, // grassy sides are raised at 0.6214
+        sidePlatformHeight: 27.375, // moves up and down
+        topPlatformHeight: 42.75,
+        leftLedgeX: -63.35,
+        rightLedgeX: 63.35,
+    },
+    3: {
+        name: "Pokemon Stadium", // transforms, no top
+        leftXBoundary: -230,
+        rightXBoundary: 230,
+        upperYBoundary: 180,
+        lowerYBoundary: -111,
+        mainPlatformHeight: 0, // just a good guess
+        sidePlatformHeight: 25,
+        leftLedgeX: -87.75,
+        rightLedgeX: 87.75,
+    },
+    8: {
+        name: "Yoshi's Story",
+        leftXBoundary: -175.7,
+        rightXBoundary: 173.6,
+        upperYBoundary: 168,
+        lowerYBoundary: -91,
+        mainPlatformHeight: 0, // has slopes
+        sidePlatformHeight: 23.45,
+        topPlatformHeight: 42,
+        leftLedgeX: -56,
+        rightLedgeX: 56,
+    },
+    28: {
+        name: "Dream Land N64",
+        leftXBoundary: -255,
+        rightXBoundary: 255,
+        upperYBoundary: 250,
+        lowerYBoundary: -123,
+        mainPlatformHeight: 0.01,
+        sidePlatformHeight: 30.2425,
+        topPlatformHeight: 51.4264,
+        leftLedgeX: -77.27,
+        rightLedgeX: 77.27,
+    },
+    31: {
+        name: "Battlefield",
+        leftXBoundary: -224,
+        rightXBoundary: 224,
+        upperYBoundary: 200,
+        lowerYBoundary: -108.8,
+        mainPlatformHeight: 0,
+        sidePlatformHeight: 27.2,
+        topPlatformHeight: 54.4,
+        leftLedgeX: -68.4,
+        rightLedgeX: 68.4,
+    },
+    32: {
+        name: "Final Destination", // no side/top
+        leftXBoundary: -246,
+        rightXBoundary: 246,
+        upperYBoundary: 188,
+        lowerYBoundary: -140,
+        mainPlatformHeight: 0,
+        leftLedgeX: -85.5606,
+        rightLedgeX: 85.5606,
+    }
+}
+
+
+export const CHARACTER_MAP: Record<number, string> = {
+    0: "Captain Falcon",
+    1: "Donkey Kong",
+    2: "Fox",
+    3: "Mr. Game & Watch",
+    4: "Kirby",
+    5: "Bowser",
+    6: "Link",
+    7: "Luigi",
+    8: "Mario",
+    9: "Marth",
+    10: "Mewtwo",
+    11: "Ness",
+    12: "Peach",
+    13: "Pikachu",
+    14: "Ice Climbers",
+    15: "Jigglypuff",
+    16: "Samus",
+    17: "Yoshi",
+    18: "Zelda",
+    19: "Sheik",
+    20: "Falco",
+    21: "Young Link",
+    22: "Dr. Mario",
+    23: "Roy",
+    24: "Pichu",
+    25: "Ganondorf"
+}
