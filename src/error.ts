@@ -3,3 +3,9 @@ export class SlippiReadError extends Error {
         super("Slippi file is incomplete.");
     }
 }
+
+export class FrameStateError extends Error {
+    constructor() {
+        super("Cannot find player state");
+    }
+}
