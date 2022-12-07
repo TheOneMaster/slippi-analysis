@@ -12,18 +12,6 @@ export async function readDirectory(dir: string): Promise<SlippiGame[]> {
     return slp_files;
 }
 
-export function getCharacters(slp: SlippiGame): number[]  {
-
-    const settings = slp.getSettings();    
-    const players = settings?.players;
-
-    if (!players) throw new SlippiReadError();
-
-    const chars = players?.map(player => player.characterId ?? -1);
-
-    return chars
-}
-
 export function roundToDecimal(num: number, sig_figs: number) {
     const p = Math.pow(10, sig_figs);
     const n = (num * p) * (1 + Number.EPSILON);

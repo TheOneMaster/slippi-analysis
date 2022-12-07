@@ -2,7 +2,7 @@ import { Character, SlippiGame, Stage } from "@slippi/slippi-js";
 
 import { SlippiReadError } from "./error";
 import { Filter, FilterOptions } from "./filter.interface";
-import { getCharacters } from "./helper";
+import { getCharacters } from "./analysis/char";
     
 
 
