@@ -1,7 +1,6 @@
 import { SlippiGame } from "@slippi/slippi-js";
+import { getCharacterName } from "../base/helper";
 import { SlippiReadError } from "../error";
-
-import { CHARACTER_MAP } from "./constants";
 
 export function findPlayerByChar(slp: SlippiGame, char: number): number {
 
@@ -19,7 +18,7 @@ export function findPlayerByChar(slp: SlippiGame, char: number): number {
     }
 
     // If no player played that character
-    throw new Error(`No player played ${CHARACTER_MAP[char]}`)
+    throw new Error(`No player played ${getCharacterName(char)}`)
 }
 
 
