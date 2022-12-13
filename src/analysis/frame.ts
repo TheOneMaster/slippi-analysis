@@ -101,38 +101,6 @@ export class Frame {
 
 
 
-export function findSimilarFrames(comparing_game: SlippiGame, original_frame: Frame): string[]
-export function findSimilarFrames(comparing_game: SlippiGame, origGame_or_frame: SlippiGame, frame: number): string[]
-export function findSimilarFrames(comparing_game: SlippiGame, origGame_or_frame: SlippiGame|Frame, frame?: number): string[] {
-
-    let original_frame: Frame;
-
-    if (origGame_or_frame instanceof SlippiGame) {
-        if (frame === undefined) {
-            throw new Error("Provide a frame to use as a base");
-        }
-
-        original_frame = new Frame(origGame_or_frame.getFrames()[frame]);
-    } else {
-        original_frame = origGame_or_frame;
-    }
-
-    const comparing_game_frames = comparing_game.getFrames();
-    const synced_player_index = syncPlayerIndexByCharacter(comparing_game, original_frame);
-    let similar_frames: string[] = [];
-
-
-    for (const frame_index in comparing_game_frames) {
-        const comparison_frame = new Frame(comparing_game_frames[frame_index]);
-
-        if (original_frame.isSimilar(comparison_frame, synced_player_index)) {
-            similar_frames.push(frame_index);
-        }
-    }
-
-    return similar_frames
-}
-
 function syncPlayerIndexByCharacter(new_slp: SlippiGame, original_frame: Frame): SyncedPlayers {
 
     const sync: SyncedPlayers = {};
@@ -179,3 +147,37 @@ function syncPlayerIndexByCharacter(new_slp: SlippiGame, original_frame: Frame):
     return sync;
 
 }
+
+export function findSimilarFrames(comparing_game: SlippiGame, original_frame: Frame): string[]
+export function findSimilarFrames(comparing_game: SlippiGame, origGame_or_frame: SlippiGame, frame: number): string[]
+export function findSimilarFrames(comparing_game: SlippiGame, origGame_or_frame: SlippiGame|Frame, frame?: number): string[] {
+
+    let original_frame: Frame;
+
+    if (origGame_or_frame instanceof SlippiGame) {
+        if (frame === undefined) {
+            throw new Error("Provide a frame to use as a base");
+        }
+
+        original_frame = new Frame(origGame_or_frame.getFrames()[frame]);
+    } else {
+        original_frame = origGame_or_frame;
+    }
+
+    const comparing_game_frames = comparing_game.getFrames();
+    const synced_player_index = syncPlayerIndexByCharacter(comparing_game, original_frame);
+    let similar_frames: string[] = [];
+
+
+    for (const frame_index in comparing_game_frames) {
+        const comparison_frame = new Frame(comparing_game_frames[frame_index]);
+
+        if (original_frame.isSimilar(comparison_frame, synced_player_index)) {
+            similar_frames.push(frame_index);
+        }
+    }
+
+    return similar_frames
+}
+
+
