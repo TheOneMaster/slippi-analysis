@@ -2,8 +2,6 @@ import { readdir } from "fs/promises";
 import { SlippiGame } from "@slippi/slippi-js";
 import path from "path";
 
-import { SlippiReadError } from "./error";
-
 export async function readDirectory(dir: string): Promise<SlippiGame[]> {
 
     const files = await readdir(dir);
