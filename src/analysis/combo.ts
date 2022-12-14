@@ -3,7 +3,8 @@ import { SlippiGame } from "@slippi/slippi-js";
 import { SlippiReadError } from "../error";
 
 import { getGrabFrames } from "./base";
-import { Combo, GameRecoveries, RecoveryObject, ReplayCombos } from "./combo.interface";
+import { Combo, GameRecoveries, ReplayCombos } from "./combo.interface";
+import { Recovery } from "./recovery";
 import { isInGroundedControl, isDead, isRecovering } from "./state";
 
 export function getGrabCombos(slp: SlippiGame): ReplayCombos {
@@ -70,83 +71,68 @@ export function getGrabCombos(slp: SlippiGame): ReplayCombos {
 
 export function getRecoveries(slp: SlippiGame) {
 
-    const slp_players = slp.getSettings()?.players;
-    const slp_stageId = slp.getSettings()?.stageId;
+    const slp_settings = slp.getSettings();
+    const slp_players = slp_settings?.players;
+    const slp_stageId = slp_settings?.stageId;
 
-    if (slp_players === undefined || slp_stageId == null) {
-        throw new SlippiReadError();
+    if (slp_players === undefined || slp_stageId == undefined) {
+        throw new SlippiReadError(slp);
     }
-
 
     const slp_frames = slp.getFrames();
 
-    const GameRecoveries: GameRecoveries = {};
-    const player_recovery_storage: { [playerIndex: number]: RecoveryObject } = {};
+    const gameRecoveries: GameRecoveries = {};
 
+    for (const frameIndex in slp_frames) {
 
-    for (const frame_index in slp_frames) {
+        const frameData = slp_frames[frameIndex];
+        const frame_players = frameData.players;
 
-        const frame_data = slp_frames[frame_index];
-        const players = frame_data.players;
+        for (const playerId in frame_players) {
+            const frame_playerData = frame_players[playerId]?.post;
 
-
-        for (const playerId in players) {
-
-            const playerData = players[playerId]?.post;
-
-            if (playerData === undefined) {
+            if (frame_playerData === undefined) {
                 continue
             }
 
-            const recovering = isRecovering(playerData, slp_stageId);
-            const dead = isDead(playerData);
-            const playerId_int = parseInt(playerId);
+            const recovery_check = isRecovering(frame_playerData, slp_stageId);
+            const dead_check = isDead(frame_playerData);
+            const playerIndex = parseInt(playerId);
 
-            if (!recovering || dead) {
+            if (!recovery_check || dead_check) {
 
-                if (!player_recovery_storage[playerId_int]) {
+                const active_recovery = Recovery.getActiveRecovery(playerIndex);
+
+                if (active_recovery === undefined) {
                     continue
                 }
 
-                const recovery = player_recovery_storage[playerId_int];
-                delete player_recovery_storage[playerId_int];
+                Recovery.endRecovery(playerIndex);
 
-                if (dead) recovery.successful = false
+                if (dead_check) active_recovery.successful = false;
 
-                if (!GameRecoveries[playerId_int]) {
-                    GameRecoveries[playerId_int] = [recovery]
-                } else {
-                    GameRecoveries[playerId_int].push(recovery);
+                if (gameRecoveries[playerIndex]) {
+                    gameRecoveries[playerIndex].push(active_recovery.toObject())
+                    continue
                 }
+
+                gameRecoveries[playerIndex] = [active_recovery.toObject()];
                 continue
+            } 
+
+            const frameIndex_int = parseInt(frameIndex);
+            let active_recovery = Recovery.getActiveRecovery(frameIndex_int);
+
+            if (active_recovery === undefined) {
+                const startPercent = frame_playerData.percent ?? -1;
+                active_recovery = new Recovery(frameIndex_int, startPercent, playerIndex);
             }
 
-
-            const frame_int = parseInt(frame_index);
-
-            if (!player_recovery_storage[playerId_int]) {
-                const recovery: RecoveryObject = {
-                    startFrame: frame_int,
-                    endFrame: frame_int,
-
-                    startPercent: playerData.percent ?? -1,
-                    endPercent: playerData.percent ?? -1,
-
-                    successful: true
-                }
-
-                player_recovery_storage[playerId_int] = recovery;
-            } else {
-                const recovery = player_recovery_storage[playerId_int];
-
-                recovery.endFrame = frame_int;
-                recovery.endPercent = playerData.percent ?? recovery.endPercent;
-            }
-
-
+            active_recovery.endPercent = frame_playerData.percent ?? active_recovery.endPercent;
+            active_recovery.endFrame = frameIndex_int;
         }
+
     }
 
-    return GameRecoveries
+    return gameRecoveries
 }
-

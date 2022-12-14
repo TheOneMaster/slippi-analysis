@@ -1,3 +1,4 @@
+import { Recovery } from "./recovery"
 export interface Combo {
     frames: number[],
     player: number,
@@ -26,4 +27,7 @@ export interface RecoveryObject {
 }
 export interface GameRecoveries {
     [playerIndex: number]: RecoveryObject[]
+}
+export interface ActiveRecoveries {
+    [playerIndex: number]: Recovery
 }
