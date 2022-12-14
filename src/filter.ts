@@ -44,7 +44,7 @@ function checkStage(slp: SlippiGame, stage: Stage): boolean {
 
     // null == undefined
     // 
-    if (stageId == null) throw new SlippiReadError();
+    if (stageId == null) throw new SlippiReadError(slp);
 
     return stageId === stage;
 }
@@ -59,7 +59,7 @@ function checkNumPlayers(slp: SlippiGame, num_players: number) {
     const settings = slp.getSettings();
     const players = settings?.players;
 
-    if (players == null) throw new SlippiReadError();
+    if (players == null) throw new SlippiReadError(slp);
 
     return players.length === num_players;
 }
@@ -100,7 +100,7 @@ export function filterGames(slp_list: SlippiGame[], filter_game: SlippiGame): Sl
 
 
     if (stage == null || numPlayers === undefined) {
-        throw new SlippiReadError();
+        throw new SlippiReadError(filter_game);
     }
 
     const filter: Filter = {
