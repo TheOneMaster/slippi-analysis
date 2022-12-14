@@ -1,4 +1,3 @@
-import { Recovery } from "./recovery"
 export interface Combo {
     frames: number[],
     player: number,
@@ -16,18 +15,4 @@ export interface ReplayCombos {
     [frameIndex: string]: Combo
 }
 
-export interface RecoveryObject {
-    startFrame: number,
-    endFrame: number,
 
-    startPercent: number,
-    endPercent: number,
-
-    successful: boolean
-}
-export interface GameRecoveries {
-    [playerIndex: number]: RecoveryObject[]
-}
-export interface ActiveRecoveries {
-    [playerIndex: number]: Recovery
-}
