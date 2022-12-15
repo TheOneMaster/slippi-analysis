@@ -1,8 +1,17 @@
-import { SlippiGame } from "@slippi/slippi-js"
+import { FrameEntryType, SlippiGame } from "@slippi/slippi-js"
 
-import { GameRecoveries, ActiveRecoveries, RecoveryObject } from "./recovery.interface"
-import { isRecovering, isDead } from "./state"
+import { 
+    GameRecoveries,
+    ActiveRecoveries,
+    RecoveryObject,
+    Move,
+    RecoveryStatus 
+} from "./recovery.interface"
+
+import { isDead, isInHitstun } from "./state"
+import { isRecovering } from "./position"
 import { SlippiReadError } from "../error"
+
 
 export class Recovery {
 
@@ -11,8 +20,11 @@ export class Recovery {
     public startPercent: number
     public endPercent: number
     public successful: boolean
+    public hitBy: Move[]
 
-    private static activeRecoveries: ActiveRecoveries = {}
+    private playerIndex: number
+    private lastHitBy: number
+    private recoveryStatus: RecoveryStatus
 
     constructor(startFrame: number, startPercent: number, playerIndex: number) {
         this.startFrame = startFrame;
@@ -21,16 +33,34 @@ export class Recovery {
         this.endFrame = startFrame;
         this.endPercent = startPercent;
         this.successful = true;
+        this.hitBy = [];
 
-        Recovery.activeRecoveries[playerIndex] = this;
+        this.playerIndex = playerIndex;
+        this.lastHitBy = -1;
+        this.recoveryStatus = RecoveryStatus.ACTIVE;
     }
 
-    static getActiveRecovery(playerIndex: number): Recovery|undefined {
-        return Recovery.activeRecoveries[playerIndex]
-    }
+    parseFrame(frame: FrameEntryType, stageId: number): RecoveryStatus {
+        const frame_playerData = frame.players[this.playerIndex];
 
-    static endRecovery(playerIndex: number) {
-        delete Recovery.activeRecoveries[playerIndex]
+        const currentFrame_playerData = frame_playerData?.post;
+
+        if (currentFrame_playerData === undefined) {
+            return this.recoveryStatus;
+        }
+
+        
+        if (isRecovering(currentFrame_playerData, stageId)) {
+            this.endFrame = frame.frame;
+            this.endPercent = currentFrame_playerData.percent ?? this.endPercent;
+        } else {
+            
+            if (isDead(currentFrame_playerData)) this.successful = false;
+
+            this.recoveryStatus = RecoveryStatus.FINISHED;
+        }
+
+        return this.recoveryStatus
     }
 
     toObject(): RecoveryObject {
@@ -39,6 +69,7 @@ export class Recovery {
             endFrame: this.endFrame,
             startPercent: this.startPercent,
             endPercent: this.endPercent,
+            hitBy: this.hitBy,
             successful: this.successful
         }
 
@@ -47,70 +78,66 @@ export class Recovery {
 
 }
 
-export function getRecoveries(slp: SlippiGame) {
+
+export function getRecoveries(slp: SlippiGame): GameRecoveries {
 
     const slp_settings = slp.getSettings();
     const slp_players = slp_settings?.players;
     const slp_stageId = slp_settings?.stageId;
 
-    if (slp_players === undefined || slp_stageId == undefined) {
+    if (slp_players === undefined || slp_stageId == null) {
         throw new SlippiReadError(slp);
     }
 
     const slp_frames = slp.getFrames();
-
     const gameRecoveries: GameRecoveries = {};
+    const activeRecoveries: ActiveRecoveries = {};
 
     for (const frameIndex in slp_frames) {
 
+        const frameIndex_int = parseInt(frameIndex);
         const frameData = slp_frames[frameIndex];
-        const frame_players = frameData.players;
 
-        for (const playerId in frame_players) {
-            const frame_playerData = frame_players[playerId]?.post;
+        // Parse already recovering players
+        for (const playerId in activeRecoveries) {
+            const playerRecovery = activeRecoveries[playerId];
+            const recovery_status = playerRecovery.parseFrame(frameData, slp_stageId);
 
-            if (frame_playerData === undefined) {
-                continue
-            }
+            if (recovery_status === RecoveryStatus.FINISHED) {
 
-            const recovery_check = isRecovering(frame_playerData, slp_stageId);
-            const dead_check = isDead(frame_playerData);
-            const playerIndex = parseInt(playerId);
-
-            if (!recovery_check || dead_check) {
-
-                const active_recovery = Recovery.getActiveRecovery(playerIndex);
-
-                if (active_recovery === undefined) {
-                    continue
+                const recoveryObject = playerRecovery.toObject();
+                delete activeRecoveries[playerId];
+                
+                if (playerId in gameRecoveries) {
+                    gameRecoveries[playerId].push(recoveryObject);
+                } else {
+                    gameRecoveries[playerId] = [recoveryObject]
                 }
-
-                Recovery.endRecovery(playerIndex);
-
-                if (dead_check) active_recovery.successful = false;
-
-                if (gameRecoveries[playerIndex]) {
-                    gameRecoveries[playerIndex].push(active_recovery.toObject())
-                    continue
-                }
-
-                gameRecoveries[playerIndex] = [active_recovery.toObject()];
-                continue
-            } 
-
-            const frameIndex_int = parseInt(frameIndex);
-            let active_recovery = Recovery.getActiveRecovery(frameIndex_int);
-
-            if (active_recovery === undefined) {
-                const startPercent = frame_playerData.percent ?? -1;
-                active_recovery = new Recovery(frameIndex_int, startPercent, playerIndex);
             }
-
-            active_recovery.endPercent = frame_playerData.percent ?? active_recovery.endPercent;
-            active_recovery.endFrame = frameIndex_int;
         }
 
+        // Get players not already in the process of recovering
+        const otherPlayers: number[] = Object.keys(frameData.players)
+            .filter(playerId => !(playerId in activeRecoveries))
+            .map(playerId => parseInt(playerId));
+
+        for (const playerId of otherPlayers) {
+            const playerData = frameData.players[playerId]?.post;
+
+            if (playerData === undefined) {
+                continue
+            }
+
+            // If they are recognized as recovering & not 
+            if (isRecovering(playerData, slp_stageId)) {
+                const startPercent = playerData.percent ?? -1;
+                activeRecoveries[playerId] = new Recovery(frameIndex_int, startPercent, playerId);
+            }
+
+            continue
+        }
     }
 
+    
     return gameRecoveries
 }
