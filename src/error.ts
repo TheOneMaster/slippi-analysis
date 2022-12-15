@@ -1,4 +1,4 @@
-import { SlippiGame } from "@slippi/slippi-js";
+import { PostFrameUpdateType, SlippiGame } from "@slippi/slippi-js";
 import path from "path";
 
 export class SlippiReadError extends Error {
@@ -10,7 +10,7 @@ export class SlippiReadError extends Error {
 }
 
 export class FrameStateError extends Error {
-    constructor() {
-        super("Cannot find player state");
+    constructor(frame: PostFrameUpdateType) {
+        super(`Cannot find player state at frame ${frame.frame}`);
     }
 }
