@@ -6,7 +6,7 @@ export function findPlayerByChar(slp: SlippiGame, char: number): number {
 
     const players = slp.getSettings()?.players;
     if (players === undefined) {
-        throw new SlippiReadError();
+        throw new SlippiReadError(slp);
     }
 
     for (let i=0; i < players.length; i++) {     
@@ -27,7 +27,7 @@ export function getCharacters(slp: SlippiGame): number[]  {
     const settings = slp.getSettings();    
     const players = settings?.players;
 
-    if (!players) throw new SlippiReadError();
+    if (!players) throw new SlippiReadError(slp);
 
     const chars = players?.map(player => player.characterId ?? -1);
 
