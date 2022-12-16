@@ -9,27 +9,30 @@ import { fileExists } from "../helper";
 export class PlaybackDolphin {
 
     public dolphinBinaryLocation: string
-    public meleeISOPath: string    
+    public meleeISOPath: string
     public dolphinInstance: ChildProcessWithoutNullStreams | null
     
-
     constructor(dolphinPath: string, meleeISO: string) {
         this.dolphinBinaryLocation = dolphinPath;
         this.meleeISOPath = meleeISO;
         this.dolphinInstance = null;
     }
 
-    async play(replayFile: string, startFrame?: number, endFrame?: number) {
+    async play(replayFile: string, options?: PlaybackReplayCommunication) {
 
-        const communicationOptions: PlaybackReplayCommunication = {
-            mode: "normal",
-            replay: replayFile,
-            startFrame: startFrame,
-            endFrame: endFrame
-        };
+        let communicationOptions: PlaybackReplayCommunication;
+
+        if (options) {
+            communicationOptions = options;
+        } else {
+            communicationOptions = {
+                mode: "normal",
+                replay: replayFile
+            };
+        }
 
         const commFilePath = this.generateTempCommunicationFile();
-        
+
         await fs.writeFile(commFilePath, JSON.stringify(communicationOptions));
 
         const params = ["-b", "-e", this.meleeISOPath];
@@ -37,20 +40,12 @@ export class PlaybackDolphin {
 
         this.dolphinInstance = spawn(this.dolphinBinaryLocation, params);
 
-        this.dolphinInstance.on("error", (err) => {
-            console.log(err);
+        this.dolphinInstance.on("error", async (err) => {
+            console.warn(err);
+            this.deleteFile(commFilePath);
         })
 
-        this.dolphinInstance.on("close", async () => {
-            try {
-                const exists = await fileExists(commFilePath);
-                if (exists) {
-                    fs.unlink(commFilePath);
-                }
-            } catch (err) {
-                console.warn(err);
-            }
-        });
+        this.dolphinInstance.on("close", async () => this.deleteFile(commFilePath));
     }
 
     private generateTempCommunicationFile() {
@@ -59,6 +54,17 @@ export class PlaybackDolphin {
         const commFilePath = path.join('.', commFileName);
 
         return commFilePath
+    }
+
+    private async deleteFile(filePath: string) {
+        try {
+            const exists = await fileExists(filePath);
+            if (exists) {
+                fs.unlink(filePath)
+            }
+        } catch (err) {
+            console.warn(err)
+        }
     }
 
 }
