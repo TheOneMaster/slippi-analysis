@@ -1,4 +1,4 @@
-import { PostFrameUpdateType, SlippiGame } from "@slippi/slippi-js";
+import { FrameEntryType, PostFrameUpdateType, SlippiGame } from "@slippi/slippi-js";
 import path from "path";
 
 export class SlippiReadError extends Error {
@@ -6,6 +6,13 @@ export class SlippiReadError extends Error {
         const pathName = slp.getFilePath() ?? "<unable to obtain filename>";
         const baseName = path.basename(pathName);
         super(`Replay ${baseName} is incomplete.`);
+    }
+}
+
+
+export class FrameReadError extends Error {
+    constructor(frame: FrameEntryType) {
+        super(`Frame ${frame.frame} corrupted, cannot read data.`)
     }
 }
 
