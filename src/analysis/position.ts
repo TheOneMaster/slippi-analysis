@@ -13,13 +13,6 @@ export function isRecovering(frame: PostFrameUpdateType, stageId: number) {
         return false;
     }
 
-    const momentum = frame.selfInducedSpeeds;
-
-    if (!momentum) {
-        throw new Error("Unable to obtain momentum from player on frame.");
-    }
-
-
     // Get current position
     const posX = frame.positionX;
     const posY = frame.positionY;
@@ -28,13 +21,14 @@ export function isRecovering(frame: PostFrameUpdateType, stageId: number) {
         throw new Error("Unable to obtain position");
     }
 
+    const momentum = frame.selfInducedSpeeds;
 
     // Get momentum
-    const momentumX = momentum.airX;
-    const momentumY = momentum.y;
+    const momentumX = momentum?.airX;
+    const momentumY = momentum?.y;
 
-    if (momentumX === null || momentumY === null) {
-        throw new Error("Unable to obtain momentum");
+    if (!momentum || momentumX == null || momentumY == null) {
+        return !onStage
     }
 
     // Make sure that the player is recovering towards the stage
