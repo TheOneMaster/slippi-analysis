@@ -1,16 +1,18 @@
 import { calcDamageTaken, FrameEntryType, FramesType, PostFrameUpdateType, SlippiGame } from "@slippi/slippi-js"
+import _ from "lodash";
 
 import { 
-    GameRecoveries,
     ActiveRecoveries,
     RecoveryObject,
     Move,
-    RecoveryStatus 
+    RecoveryStatus, 
+    GameRecoveries
 } from "./recovery.interface"
 
 import { isDead, isInHitstun } from "./state"
 import { isRecovering } from "./position"
 import { FrameReadError, SlippiReadError } from "../error"
+import { getCharacters } from "./char"
 
 
 export class Recovery {
@@ -21,6 +23,7 @@ export class Recovery {
     public endPercent: number
     public successful: boolean
     public hitBy: Move[]
+    public edgeGuard: boolean
 
     private playerIndex: number
     private lastHitBy: number
@@ -40,6 +43,7 @@ export class Recovery {
         this.endPercent = this.startPercent;
         this.successful = true;
         this.hitBy = [];
+        this.edgeGuard = true;
 
         this.playerIndex = playerIndex;
         this.lastHitBy = -1;
@@ -66,6 +70,7 @@ export class Recovery {
         if (isInHitstun(frameData)) {
             this.lastHitBy = this.getOpponentLastMove(frame);
             this.hitBy.push(this.getOpponentMove(frames, frameNum));
+            this.edgeGuard = false
         }
 
 
@@ -118,7 +123,8 @@ export class Recovery {
             startPercent: this.startPercent,
             endPercent: this.endPercent,
             hitBy: this.hitBy,
-            successful: this.successful
+            successful: this.successful,
+            fromEdgeguard: this.edgeGuard
         }
 
         return rec_obj
@@ -198,7 +204,11 @@ export function getRecoveries(slp: SlippiGame): GameRecoveries {
     }
 
     const slp_frames = slp.getFrames();
-    const gameRecoveries: GameRecoveries = {};
+    const gameRecoveries: GameRecoveries = {
+        path: slp.getFilePath() ?? "",
+        chars: getCharacters(slp),
+        recoveries: {}
+    };
     const activeRecoveries: ActiveRecoveries = {};
 
     for (const frameIndex in slp_frames) {
@@ -216,10 +226,10 @@ export function getRecoveries(slp: SlippiGame): GameRecoveries {
                 const recoveryObject = playerRecovery.toObject();
                 delete activeRecoveries[playerId];
                 
-                if (playerId in gameRecoveries) {
-                    gameRecoveries[playerId].push(recoveryObject);
+                if (playerId in gameRecoveries.recoveries) {
+                    gameRecoveries.recoveries[playerId].push(recoveryObject);
                 } else {
-                    gameRecoveries[playerId] = [recoveryObject];
+                    gameRecoveries.recoveries[playerId] = [recoveryObject];
                 }
             }
         }
@@ -246,17 +256,53 @@ export function getRecoveries(slp: SlippiGame): GameRecoveries {
     }
     
     // Remove recoveries identified that are not at least 10 frames long
-    for (const playerId in gameRecoveries) {
+    const recoveryData = gameRecoveries.recoveries;
+    for (const playerId in recoveryData) {
 
-        gameRecoveries[playerId] = gameRecoveries[playerId].filter((recovery) => {
+        recoveryData[playerId] = recoveryData[playerId].filter((recovery) => {
             const totalFrames = recovery.endFrame - recovery.startFrame;
 
             return totalFrames >= 10;
         })
+    };
 
-
-    }
+    gameRecoveries.recoveries = recoveryData;
 
 
     return gameRecoveries
+}
+
+export function getOffstageEdgeguards(recoveries: GameRecoveries): GameRecoveries {
+
+    const recoveryClone = _.cloneDeep(recoveries);
+    const recoveryData = recoveryClone.recoveries;
+    
+    for (const playerId in recoveryData) {
+
+        const playerRecoveries = recoveryData[playerId];
+        const offstageEdgeguards = playerRecoveries.filter(recovery => recovery.fromEdgeguard);
+
+        recoveryData[playerId] = offstageEdgeguards;
+    }
+
+    recoveryClone.recoveries = recoveryData;
+
+    return recoveryClone;
+}
+
+export function getFailedRecoveries(recoveries: GameRecoveries): GameRecoveries {
+
+    const recoveryClone = _.cloneDeep(recoveries);
+
+    const recoveryData = recoveryClone.recoveries;
+
+    for (const playerId in recoveryData) {
+        const playerRecoveries = recoveryData[playerId];
+        const failedRecoveries = playerRecoveries.filter(recovery => !recovery.successful);
+        recoveryData[playerId] = failedRecoveries;
+    }
+
+    recoveryClone.recoveries = recoveryData;
+    
+    return recoveryClone;
 }

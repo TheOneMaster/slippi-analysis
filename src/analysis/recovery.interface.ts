@@ -7,9 +7,18 @@ export interface RecoveryObject {
     endPercent: number,
 
     hitBy: Move[],
-    successful: boolean
+    successful: boolean,
+    fromEdgeguard: boolean,
 }
+
 export interface GameRecoveries {
+    path: string,
+    chars: number[],
+    recoveries: PlayerRecoveries
+}
+
+
+export interface PlayerRecoveries {
     [playerIndex: number]: RecoveryObject[]
 }
 export interface ActiveRecoveries {
