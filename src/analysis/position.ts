@@ -41,6 +41,14 @@ export function isRecovering(frame: PostFrameUpdateType, stageId: number) {
     return closerX || closerY;
 }
 
+/**
+ * Checks whether the player is within the bounding box of the main stage. This means that they are within the x coords of the stage and has a y coord
+ * between the stage and the middle of the highest platform and the upper blastzone.
+ *  
+ * @param frame The player data on a specific frame
+ * @param stageId The stage id the game is being played on
+ * @returns a check on whether the player is on-stage
+ */
 export function isOnstage(frame: PostFrameUpdateType, stageId: number): boolean {
 
     const stageGeometry = STAGE_GEOMETRY_MAP[stageId];
@@ -57,17 +65,21 @@ export function isOnstage(frame: PostFrameUpdateType, stageId: number): boolean 
         char_pos_x <= stageGeometry.rightLedgeX
     );
 
-    let within_y: boolean;
+    let max_y: number
 
+    // Find the max y value for all kinds of stages (with top platform, only side plats, and no plats)
     if (stageGeometry.topPlatformHeight !== undefined) {
         const halfway_y = (stageGeometry.upperYBoundary - stageGeometry.topPlatformHeight) / 2;
-        const max_y = stageGeometry.topPlatformHeight + halfway_y;
-        within_y = (max_y >= char_pos_y && char_pos_y >= stageGeometry.mainPlatformHeight - 5);
+        max_y = stageGeometry.topPlatformHeight + halfway_y;
+    } else if (stageGeometry.sidePlatformHeight !== undefined) {
+        const halfway_y = (stageGeometry.upperYBoundary - stageGeometry.sidePlatformHeight) / 2;
+        max_y = stageGeometry.sidePlatformHeight + halfway_y;;
     } else {
         const halfway_y = (stageGeometry.upperYBoundary - stageGeometry.mainPlatformHeight) / 2;
-        const max_y = stageGeometry.mainPlatformHeight + halfway_y;
-        within_y = (max_y >= char_pos_y && char_pos_y >= stageGeometry.mainPlatformHeight - 5);
+        max_y = stageGeometry.mainPlatformHeight + halfway_y;
     }
+
+    const within_y = (max_y >= char_pos_y && char_pos_y >= stageGeometry.mainPlatformHeight - 5);
 
     return within_x && within_y
 }
