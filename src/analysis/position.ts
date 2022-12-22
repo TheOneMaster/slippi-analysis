@@ -60,9 +60,11 @@ export function isOnstage(frame: PostFrameUpdateType, stageId: number): boolean 
         throw new Error("Unable to get player position in frame")
     }
 
+    // Make sure they are within the horizontal bounds of the stage
+    // Add some leeway for grabbing the ledge
     const within_x = (
-        char_pos_x >= stageGeometry.leftLedgeX &&
-        char_pos_x <= stageGeometry.rightLedgeX
+        char_pos_x >= stageGeometry.leftLedgeX - 10 &&
+        char_pos_x <= stageGeometry.rightLedgeX + 10
     );
 
     let max_y: number
