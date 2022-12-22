@@ -1,9 +1,10 @@
 import { ChildProcessWithoutNullStreams, spawn } from "child_process"
-import { randomBytes } from "crypto";
 import path from "path";
 import * as fs from "fs-extra"
-import { PlaybackReplayCommunication } from "./playback.interface";
+
+import { PlaybackReplayCommunication, QueueReplayItem } from "./playback.interface";
 import { fileExists } from "../helper";
+import { GameRecoveries } from "../analysis/recovery.interface";
 
 
 export class PlaybackDolphin {
@@ -31,7 +32,7 @@ export class PlaybackDolphin {
             };
         }
 
-        const commFilePath = this.generateTempCommunicationFile();
+        const commFilePath = this.createTempFilename();
 
         await fs.writeFile(commFilePath, JSON.stringify(communicationOptions));
 
@@ -40,16 +41,16 @@ export class PlaybackDolphin {
 
         this.dolphinInstance = spawn(this.dolphinBinaryLocation, params);
 
-        this.dolphinInstance.on("error", async (err) => {
-            console.warn(err);
+        this.dolphinInstance.on("error", (error: Error) => {
+            console.warn(error);
             this.deleteFile(commFilePath);
         })
 
-        this.dolphinInstance.on("close", async () => this.deleteFile(commFilePath));
+        this.dolphinInstance.on("close", () => this.deleteFile(commFilePath));
     }
 
-    private generateTempCommunicationFile() {
-        const randomString = randomBytes(10).toString("hex");
+    private createTempFilename(): string {
+        const randomString = new Date().toString();
         const commFileName = `slippi-comm-${randomString}.json`;
         const commFilePath = path.join('.', commFileName);
 
@@ -67,4 +68,44 @@ export class PlaybackDolphin {
         }
     }
 
+}
+
+export function createRecoveryQueue(gameRecoveries: GameRecoveries, playerId?: number): QueueReplayItem[] {
+
+    const filePath = gameRecoveries.path;
+    
+    let queue: QueueReplayItem[] = []
+
+    if (playerId) {
+        const recoveries = gameRecoveries.recoveries[playerId];
+
+        queue = recoveries.map(recovery => {
+            const queueItem: QueueReplayItem = {
+                path: filePath,
+                startFrame: recovery.startFrame,
+                endFrame: recovery.endFrame
+            };
+            return queueItem
+        });
+    } else {
+        const playerRecoveries = gameRecoveries.recoveries;
+
+        for (const playerId in playerRecoveries) {
+            const recoveryList = playerRecoveries[playerId];
+
+            const recoveryQueue = recoveryList.map(recovery => {
+                const queueItem: QueueReplayItem = {
+                    path: filePath,
+                    startFrame: recovery.startFrame,
+                    endFrame: recovery.endFrame
+                };
+                
+                return queueItem;
+            })
+
+            queue.push(...recoveryQueue);
+        }
+    }
+
+    return queue
 }
