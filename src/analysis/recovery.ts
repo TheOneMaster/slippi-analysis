@@ -256,14 +256,14 @@ export function getRecoveries(slp: SlippiGame): GameRecoveries {
         }
     }
     
-    // Remove recoveries identified that are not at least 10 frames long
+    // Remove recoveries identified that are not at least 30 frames long
     const recoveryData = gameRecoveries.recoveries;
     for (const playerId in recoveryData) {
 
         recoveryData[playerId] = recoveryData[playerId].filter((recovery) => {
             const totalFrames = recovery.endFrame - recovery.startFrame;
 
-            return totalFrames >= 10;
+            return totalFrames >= 30;
         })
     };
 
