@@ -29,7 +29,7 @@ export class Recovery {
     private lastHitBy: number
     private recoveryStatus: RecoveryStatus
     private opponentIndex: number
-    private prevFrame: PostFrameUpdateType
+    private prevFrame: PostFrameUpdateType   // TODO: Store only the number(frame index) instead of the entire object
 
     constructor(frames: FramesType, frameNum: number, playerIndex: number) {
 
@@ -52,8 +52,9 @@ export class Recovery {
         this.opponentIndex = Object.keys(frame.players).reduce((opp, playerId) => {
 
             const playerId_int = parseInt(playerId);
+            const isNana = frame.players[playerId_int]?.post.isFollower ?? false;
 
-            if (playerId_int !== playerIndex) {
+            if (playerId_int !== playerIndex && !isNana) {
                 return playerId_int
             }
 
