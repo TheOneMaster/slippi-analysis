@@ -9,12 +9,34 @@ export interface RecoveryObject {
     hitBy: Move[],
     successful: boolean,
     fromEdgeguard: boolean,
+    opponent: number
 }
 
 export interface GameRecoveries {
     path: string,
     chars: number[],
     recoveries: PlayerRecoveries
+}
+
+export interface Edgeguard {
+    by: number,
+    to: number,
+    startFrame: number,
+    endFrame: number,
+    successful: boolean,
+    startPercent: number,
+    endPercent: number,
+    movesHit: Move[]
+}
+
+export interface PlayerEdgeguards {
+    [playerIndex: number]: Edgeguard[]
+}
+
+export interface GameEdgeguards {
+    path: string,
+    chars: number[],
+    edgeguards: PlayerEdgeguards
 }
 
 

@@ -6,7 +6,9 @@ import {
     RecoveryObject,
     Move,
     RecoveryStatus, 
-    GameRecoveries
+    GameRecoveries,
+    GameEdgeguards,
+    Edgeguard
 } from "./recovery.interface"
 
 import { isDead, isInHitstun } from "./state"
@@ -24,11 +26,11 @@ export class Recovery {
     public successful: boolean
     public hitBy: Move[]
     public edgeGuard: boolean
+    public opponentIndex: number
 
     private playerIndex: number
     private lastHitBy: number
     private recoveryStatus: RecoveryStatus
-    private opponentIndex: number
     private prevFrame: PostFrameUpdateType   // TODO: Store only the number(frame index) instead of the entire object
 
     constructor(frames: FramesType, frameNum: number, playerIndex: number) {
@@ -44,11 +46,6 @@ export class Recovery {
         this.successful = true;
         this.hitBy = [];
         this.edgeGuard = true;
-
-        this.playerIndex = playerIndex;
-        this.lastHitBy = -1;
-        this.recoveryStatus = RecoveryStatus.ACTIVE;
-
         this.opponentIndex = Object.keys(frame.players).reduce((opp, playerId) => {
 
             const playerId_int = parseInt(playerId);
@@ -60,6 +57,11 @@ export class Recovery {
 
             return opp
         }, -1);
+
+        this.playerIndex = playerIndex;
+        this.lastHitBy = -1;
+        this.recoveryStatus = RecoveryStatus.ACTIVE;
+        
         const frameData = playerData?.post;
         const opponent_frameData = frame.players[this.opponentIndex];
 
@@ -68,13 +70,13 @@ export class Recovery {
         }
         this.prevFrame = frameData;
 
+        // If recovery starts in hitstun, this is not an edgeguard attempt
+        // Mark as not an edgeguard and get the move that hit the person offstage
         if (isInHitstun(frameData)) {
             this.lastHitBy = this.getOpponentLastMove(frame);
             this.hitBy.push(this.getOpponentMove(frames, frameNum));
             this.edgeGuard = false
         }
-
-
     }
 
     parseFrame(frames: FramesType, frameNum: number, stageId: number): RecoveryStatus {
@@ -125,7 +127,8 @@ export class Recovery {
             endPercent: this.endPercent,
             hitBy: this.hitBy,
             successful: this.successful,
-            fromEdgeguard: this.edgeGuard
+            fromEdgeguard: this.edgeGuard,
+            opponent: this.opponentIndex
         }
 
         return rec_obj
@@ -271,6 +274,48 @@ export function getRecoveries(slp: SlippiGame): GameRecoveries {
 
 
     return gameRecoveries
+}
+
+export function getEdgeguards(recoveries: GameRecoveries): GameEdgeguards{
+
+    const gameEdgeguards: GameEdgeguards = {
+        path: recoveries.path,
+        chars: recoveries.chars,
+        edgeguards: {}
+    };
+
+    const playerRecoveries = recoveries.recoveries;
+
+    for (const playerId in playerRecoveries) {
+        
+        const recoveryList = playerRecoveries[playerId];
+        const playerEdgeguarded = parseInt(playerId);
+        const playerEdgeguarding = recoveryList[0].opponent;
+
+        // Remove recoveries that started as an attempt to edgeguard
+        const edgeguard_recoveries = recoveryList.filter(recovery => !recovery.fromEdgeguard);
+
+        // Map remaining recoveries to edgeguards
+        const edgeguards = edgeguard_recoveries.map(recovery => {
+
+            const edgeguard: Edgeguard = {
+                by: playerEdgeguarding,
+                to: playerEdgeguarded,
+                startFrame: recovery.startFrame,
+                endFrame: recovery.endFrame,
+                successful: !recovery.successful,
+                startPercent: recovery.startPercent,
+                endPercent: recovery.endPercent,
+                movesHit: recovery.hitBy
+            };
+
+            return edgeguard
+        });
+
+        gameEdgeguards.edgeguards[playerEdgeguarding] = edgeguards;
+    }
+
+    return gameEdgeguards
 }
 
 export function getOffstageEdgeguards(recoveries: GameRecoveries): GameRecoveries {
