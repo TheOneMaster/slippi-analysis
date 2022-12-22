@@ -1,5 +1,5 @@
 import { SlippiGame } from "@slippi/slippi-js";
-import { getEdgeguards, getRecoveries } from "../src/analysis/recovery";
+import { getEdgeguards, getFailedRecoveries, getRecoveries } from "../src/analysis/recovery";
 
 describe("Summit 11 Game 10 testing", () => {
 
@@ -31,6 +31,24 @@ describe("Summit 11 Game 10 testing", () => {
             }
 
             expect(numEdgeguards).toBe(TOTAL_EDGEGUARDS);
+        });
+
+        it("Zain has 4 failed recoveries", () => {
+            const gameRecovery = getRecoveries(slpGame);
+            const failedRecoveries = getFailedRecoveries(gameRecovery);
+
+            const recoveries = failedRecoveries.recoveries;
+
+            expect(recoveries[0].length).toBe(4);
+        });
+
+        it("Mango has 3 failed recoveries", () => {
+            const gameRecovery = getRecoveries(slpGame);
+            const failedRecoveries = getFailedRecoveries(gameRecovery);
+
+            const recoveries = failedRecoveries.recoveries;
+
+            expect(recoveries[1].length).toBe(3);
         });
     })
 
