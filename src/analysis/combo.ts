@@ -2,7 +2,7 @@ import { SlippiGame } from "@slippi/slippi-js";
 
 import { getGrabFrames } from "./base";
 import { Combo, ReplayCombos } from "./combo.interface";
-import { isInGroundedControl, isDead } from "./state";
+import { isInGroundedControl, isDead } from "../base/state";
 
 export function getGrabCombos(slp: SlippiGame): ReplayCombos {
 

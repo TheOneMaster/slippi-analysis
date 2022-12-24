@@ -1,6 +1,6 @@
 import { PostFrameUpdateType } from "@slippi/slippi-js";
 
-import { STAGE_GEOMETRY_MAP } from "../base/constants";
+import { STAGE_GEOMETRY_MAP } from "./constants";
 
 
 

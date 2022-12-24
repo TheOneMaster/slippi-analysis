@@ -1,5 +1,5 @@
 import { PostFrameUpdateType, SlippiGame } from "@slippi/slippi-js";
-import { isOnstage, isRecovering } from "../src/analysis/position";
+import { isOnstage, isRecovering } from "../src/base/position";
 
 
 describe("Position testing", () => {

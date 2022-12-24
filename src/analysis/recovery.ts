@@ -11,8 +11,8 @@ import {
     Edgeguard
 } from "./recovery.interface"
 
-import { isDead, isInHitstun } from "./state"
-import { isRecovering } from "./position"
+import { isDead, isInHitstun } from "../base/state"
+import { isRecovering } from "../base/position"
 import { FrameReadError, SlippiReadError } from "../error"
 import { getCharacters } from "./char"
 

@@ -1,8 +1,7 @@
 import { SlippiGame } from "@slippi/slippi-js";
-import { SlippiReadError } from "../error";
 
 import { Grab, GrabFrames } from "./base.interface";
-import { didGrabSucceed, isGrabbed } from "./state";
+import { didGrabSucceed, isGrabbed } from "../base/state"
 
 export function getGrabFrames(slp: SlippiGame) : GrabFrames{
 
