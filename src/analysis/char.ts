@@ -1,5 +1,5 @@
 import { SlippiGame } from "@slippi/slippi-js";
-import { getCharacterName } from "../base/helper";
+import { getCharacterName } from "@slippi/slippi-js/dist/melee/characterUtils";
 import { SlippiReadError } from "../error";
 
 export function findPlayerByChar(slp: SlippiGame, char: number): number {
