@@ -1,6 +1,7 @@
-import { FrameEntryType, PostFrameUpdateType } from "@slippi/slippi-js";
+import { FramesType, PostFrameUpdateType } from "@slippi/slippi-js";
 
 import { FrameStateError } from "../error";
+import { getPostFrame } from "./frames";
 
 /*
 
@@ -21,7 +22,6 @@ export function getActionStateId(frame: PostFrameUpdateType): number {
 
     return actionStateId;
 }
-
 
 export function isInGroundedControl(frame: PostFrameUpdateType): boolean {
 
@@ -49,8 +49,6 @@ export function isGrabbed(frame: PostFrameUpdateType): boolean {
     return actionStateId >= 0xdf && actionStateId <= 0xe8
 }
 
-
-
 export function isInHitstun(frame: PostFrameUpdateType): boolean {
     
     const actionStateId = getActionStateId(frame)
@@ -58,18 +56,27 @@ export function isInHitstun(frame: PostFrameUpdateType): boolean {
     return (actionStateId >= 0x4b && actionStateId <= 0x5b) || actionStateId === 0x26
 }
 
+export function isInHitlag(frame: PostFrameUpdateType): boolean {
 
-export function didGrabSucceed(frame: FrameEntryType, player: number): boolean {
+    // Find some way to get this data (https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md#state-bit-flags-2)
+    // That's the only way to get hitlag for older replays apparently
 
-    const post = frame.players[player]?.post;
-    const pre = frame.players[player]?.pre;
+    return false
+}
 
-    if (post === undefined || pre === undefined) {
-        throw new Error("Frame data for player is unavailable");
-    }
+export function isThrown(frame: PostFrameUpdateType): boolean {
+    const actionStateId = getActionStateId(frame);
 
-    const prev_frame_grab_attempt = pre.actionStateId === 0xd4 || pre.actionStateId === 0xd6;
-    const current_frame_grab_success = post.actionStateId === 0xd5 || post.actionStateId === 0xd7;
+    return actionStateId >= 0xef && actionStateId <= 0xf3;
+}
+
+export function didGrabSucceed(frames: FramesType, frameNum: number, player: number): boolean {
+
+    const currentFrame = getPostFrame(frames, frameNum, player);
+    const previousFrame = getPostFrame(frames, frameNum-1, player);
+
+    const prev_frame_grab_attempt = previousFrame.actionStateId === 0xd4 || previousFrame.actionStateId === 0xd6;
+    const current_frame_grab_success = currentFrame.actionStateId === 0xd5 || currentFrame.actionStateId === 0xd7;
 
     const grab_success = prev_frame_grab_attempt && current_frame_grab_success;
 
