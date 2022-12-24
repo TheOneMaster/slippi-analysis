@@ -1,6 +1,6 @@
 import { FrameEntryType, SlippiGame } from "@slippi/slippi-js"
 import { roundToDecimal } from "../helper";
-import { findPlayerByChar } from "./char";
+import { findPlayerByChar } from "../base/char";
 import { FramePlayerData, SyncedPlayers } from "./frame.interface";
 
 export class Frame {

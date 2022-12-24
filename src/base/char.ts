@@ -1,5 +1,5 @@
-import { SlippiGame } from "@slippi/slippi-js";
-import { getCharacterName } from "@slippi/slippi-js/dist/melee/characterUtils";
+import { Character, SlippiGame } from "@slippi/slippi-js";
+
 import { SlippiReadError } from "../error";
 
 export function findPlayerByChar(slp: SlippiGame, char: number): number {
@@ -21,7 +21,6 @@ export function findPlayerByChar(slp: SlippiGame, char: number): number {
     throw new Error(`No player played ${getCharacterName(char)}`)
 }
 
-
 export function getCharacters(slp: SlippiGame): number[]  {
 
     const settings = slp.getSettings();    
@@ -32,4 +31,8 @@ export function getCharacters(slp: SlippiGame): number[]  {
     const chars = players?.map(player => player.characterId ?? -1);
 
     return chars
+}
+
+export function getCharacterName(charId: number): string {
+    return Character[charId];
 }

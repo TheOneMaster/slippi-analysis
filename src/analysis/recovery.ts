@@ -14,7 +14,7 @@ import {
 import { isDead, isInHitstun } from "../base/state"
 import { isRecovering } from "../base/position"
 import { FrameReadError, SlippiReadError } from "../error"
-import { getCharacters } from "./char"
+import { getCharacters } from "../base/char";
 
 
 export class Recovery {
