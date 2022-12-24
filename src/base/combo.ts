@@ -6,7 +6,7 @@ import { getLastMoveHitBy } from "./move"
 import { isRecovering } from "./position"
 import { isDead, isInGroundedControl } from "./state"
 import { getGrabFrames } from "../analysis/base"
-import { getCharacters } from "../analysis/char"
+import { getCharacters } from "./char"
 
 export class Combo {
 
