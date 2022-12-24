@@ -1,4 +1,4 @@
-import { SlippiGame } from "@slippi/slippi-js";
+import { Frames, SlippiGame } from "@slippi/slippi-js";
 
 import { Grab, GrabFrames } from "./base.interface";
 import { didGrabSucceed, isGrabbed } from "../base/state"
@@ -9,12 +9,20 @@ export function getGrabFrames(slp: SlippiGame) : GrabFrames{
     const grab_frames = {} as GrabFrames;
 
     for (const frame in frames) {
+
+        const frame_int = parseInt(frame);
+        
+        // Only start analyzing from playable frames
+        if (frame_int < Frames.FIRST_PLAYABLE) {
+            continue
+        }
+
         const frame_data = frames[frame];
         const players = frame_data.players;
 
         for (const playerID in players) {
             const playerID_int = parseInt(playerID);
-            const grab_success = didGrabSucceed(frame_data, playerID_int);
+            const grab_success = didGrabSucceed(frames, parseInt(frame), playerID_int);
 
             // If they were grabbing & are now in the grab pull (towards you) animation
             if (grab_success) {
