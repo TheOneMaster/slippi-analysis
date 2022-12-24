@@ -11,7 +11,7 @@ import { getCharacters } from "./analysis/char";
  * @param chars - The list of characters searched for
  * @returns Boolean of whether the replay contains the given characters
  */
-function checkCharacters(slp: SlippiGame, chars: Character[]): boolean {
+export function checkCharacters(slp: SlippiGame, chars: Character[]): boolean {
 
     const slp_chars = getCharacters(slp);
     const filter_chars = chars.slice();
@@ -37,7 +37,7 @@ function checkCharacters(slp: SlippiGame, chars: Character[]): boolean {
  * @param stage - The stage ID to be checked
  * @returns Boolean of whether the game was played on the correct stage
  */
-function checkStage(slp: SlippiGame, stage: Stage): boolean {
+export function checkStage(slp: SlippiGame, stage: Stage): boolean {
 
     const settings = slp.getSettings();
     const stageId = settings?.stageId;
@@ -55,7 +55,7 @@ function checkStage(slp: SlippiGame, stage: Stage): boolean {
  * @param num_players - The number of players in the game (Ex: 2 for 1v1)
  * @returns Boolean for whether the replay contains the same number of players
  */
-function checkNumPlayers(slp: SlippiGame, num_players: number) {
+export function checkNumPlayers(slp: SlippiGame, num_players: number) {
     const settings = slp.getSettings();
     const players = settings?.players;
 
