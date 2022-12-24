@@ -1,6 +1,6 @@
 export interface PlaybackReplayCommunication {
     mode: "normal" | "mirror" | "queue",
-    replay: string,
+    replay?: string,
     startFrame?: number,
     endFrame?: number,
     commandId?: string,
@@ -18,4 +18,12 @@ export interface QueueReplayItem {
     endFrame?: number,
     gameStartAt?: string,
     gameStation?: string
+}
+
+export interface DolphinOptions {
+    // Add additional settings here in the future
+    dolphinPath: string,
+    meleeISO: string,
+    stdout: boolean,
+    loop: boolean
 }
