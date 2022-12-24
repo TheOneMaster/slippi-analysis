@@ -4,7 +4,7 @@ import { ComboFrameState, ComboObject, ComboState, ReplayCombos } from "./types"
 import { getPostFrame } from "./frames"
 import { getLastMoveHitBy } from "./move"
 import { isRecovering } from "./position"
-import { isDead, isInGroundedControl } from "./state"
+import { isDead, isInGroundedControl, isInHitlag } from "./state"
 import { getGrabFrames } from "../analysis/base"
 import { getCharacters } from "./char"
 
@@ -52,7 +52,7 @@ export class Combo {
         const opponentActionable = isInGroundedControl(opponentData);
         const opponentDead = isDead(opponentData);
 
-        this._changed(playerData);
+        this._changed(opponentData);
 
         if (opponentActionable || opponentDead) {
             if (opponentDead) {
@@ -63,8 +63,6 @@ export class Combo {
         } else {
 
             this.state = ComboState.ACTIVE
-
-            const opponentHitlag = opponentData.hitlagRemaining ?? 0
 
             if (opponentData.percent !== this.comboObject.endPercent && this.differentMove) {
                 const lastHitMove = getLastMoveHitBy(frames, frameNum, this.comboObject.opponent, this.comboObject.by);
@@ -87,17 +85,30 @@ export class Combo {
 
     _changed(frameData: PostFrameUpdateType) {
 
-        if (!this.differentMove && frameData.hitlagRemaining === 0) {
-            this.differentMove = true;
+        if (frameData.hitlagRemaining) {
+            // For newer SLP files (after 3.8.0)
+            if (!this.differentMove && frameData.hitlagRemaining === 0) {
+                this.differentMove = true;
+            }
+        } else {
+            // Older SLP files (2.0.0)
+            // Not currently working (Have to make isInHitlag work)
+            
+            if (!this.differentMove && !isInHitlag(frameData)) {
+                this.differentMove = true;
+            }
+
         }
+
+        
     }
 
     _parsePotentialHit(frames: FramesType, frameNum: number) {
 
         const opponentFrameData = getPostFrame(frames, frameNum, this.comboObject.opponent);
-        const opponentHitlag = opponentFrameData.hitlagRemaining ?? 0;
+        const opponentPercent = opponentFrameData.percent;
 
-        if (opponentHitlag > 0 && this.differentMove) {
+        if (opponentPercent !== this.comboObject.endPercent && this.differentMove) {
             this._addLastMove(frames, frameNum);
         }
     }
