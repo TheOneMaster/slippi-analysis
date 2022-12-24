@@ -12,7 +12,7 @@ import { FrameStateError } from "../error";
 
  */
 
-function getActionStateId(frame: PostFrameUpdateType): number {
+export function getActionStateId(frame: PostFrameUpdateType): number {
     const actionStateId = frame.actionStateId;
 
     if (actionStateId === null) {
