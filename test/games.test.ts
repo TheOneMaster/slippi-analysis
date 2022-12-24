@@ -1,5 +1,6 @@
 import { SlippiGame } from "@slippi/slippi-js";
 import { getEdgeguards, getFailedRecoveries, getRecoveries } from "../src/analysis/recovery";
+import { getGrabCombos } from "../src/base/combo";
 
 describe("Summit 11 Game 10 testing", () => {
 
@@ -51,6 +52,42 @@ describe("Summit 11 Game 10 testing", () => {
             expect(recoveries[1].length).toBe(3);
         });
     })
+
+
+
+})
+
+describe("Falco marth testing", () => {
+
+    const slpGame = new SlippiGame("slp/falco_marth.slp");
+
+    describe("Combo detection", () => {
+        
+        it("Total number of grab combos is 6", () => {
+            const grabCombos = getGrabCombos(slpGame);
+
+            expect(grabCombos.combos.length).toBe(6);
+        });
+
+        it("Number of grab comboes that did over 20%", () => {
+            const grabCombos = getGrabCombos(slpGame);
+
+            const thresholdComboes = grabCombos.combos
+                .filter(combo => (combo.endPercent - combo.startPercent) >= 20);
+
+            expect(thresholdComboes.length).toBe(1);
+        });
+
+        it("Number of grab comboes with more than 2 hits", () => {
+            const grabCombos = getGrabCombos(slpGame);
+
+            const thresholdComboes = grabCombos.combos
+                .filter(combo => combo.movesUsed.length > 2);
+
+            expect(thresholdComboes.length).toBe(3);
+        })
+    })
+    
 
 
 
